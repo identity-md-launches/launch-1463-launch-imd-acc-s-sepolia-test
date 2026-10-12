@@ -105,6 +105,8 @@ Confirmed by the owner on 2026-10-11, for both chains.
 
 **Live trial on test run 4 (2026-10-12, [history section 29](history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)), with the version 2 rules:** PLEA applied through the website and was **listed by a signed yes** (11 of 12, block 11,898,188); `SelfCredit` was rejected 12 to 0; after the 1-hour cooldown a challenge against PLEA was **defended** (11 of 11): the bond went to its beneficiary and the cooldown wasn't restarted. Steps 2, 3 and 5 above are done live; a delisting by a signed no was shown on a fork only.
 
+**Live trial on test run 5 (2026-10-12, [history sections 39 to 41](history.md#39-test-run-5-live-trial-selfcredit-rejected-under-version-3-2026-10-12)), with the version 3 rules and owner-only applications:** `SelfCredit` was rejected 11 to 0 under the new trader rule; a compliant trial venue ([`test/trial/TrialVenue.sol`](../test/trial/TrialVenue.sol), locked liquidity, 0.5% cashback and 0.5% burned, the trader resolved through the router's `msgSender()`) was **listed** (11 of 14) and then **defended** (11 of 12) with the bond back to its beneficiary. Every no vote read the rule's "forwarding-router recipients" as any contract `msgSender()` returns; the mainnet registry gets a precise wording first ([panel-rules-v2.md](panel-rules-v2.md#version-31-proposed-the-trader-rule-made-precise-2026-10-12)).
+
 ## Points now, token maybe later
 
 v1 has **no token**:

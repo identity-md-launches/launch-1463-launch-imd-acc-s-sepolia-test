@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | **Ethereum mainnet: the Stacker is live** at [`0x0690…f4f0`](https://etherscan.io/address/0x06909f672301f28a810f78cfe7a754851269f4f0) (launch #1409). Sepolia live: the Stacker (test run 2, launch #1294) and the ProjectRegistry the mainnet one will use (test run 5, launch #1428: rules version 3 and owner-only applications). Live listing trial on test run 4, 2026-10-12: PLEA listed by a signed yes (11 of 12) and then defended against a challenge (11 of 11, bond to its beneficiary); the negative case rejected 12 to 0 ([history, section 29](docs/history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)). Next: PLEA mainnet integrates; then the mainnet registry. |
+| **Status** | **Ethereum mainnet: the Stacker is live** at [`0x0690…f4f0`](https://etherscan.io/address/0x06909f672301f28a810f78cfe7a754851269f4f0) (launch #1409). Sepolia live: the Stacker (test run 2, launch #1294) and the ProjectRegistry the mainnet one will use (test run 5, launch #1428: rules version 3 and owner-only applications). Live listing trials, 2026-10-12: on test run 4, PLEA listed (11 of 12) and defended (11 of 11); on test run 5, under the version 3 rules, the negative case rejected 11 to 0 and a compliant trial venue listed (11 of 14) and defended (11 of 12), bond to its beneficiary ([history, sections 29 and 39 to 41](docs/history.md#41-test-run-5-trial-complete-the-trialvenue-defended-a-clearer-trader-rule-drafted-2026-10-12)). Next: the trader rule made precise (version 3.1), one more Sepolia run, then the mainnet registry; PLEA's new hook applies once deployed. |
 | **Website** | https://imdacc.fun (GitHub Pages from this repository; the old https://khaed1.github.io/imd-acc/ redirects there: live Sepolia data, real wallet transactions on test run 4, docs). Older IMD-hosted pages show older registries: https://imd-acc-sepolia-test-run-2.sites.imd.fun/ (test run 2) and https://imd-acc-sepolia-test-run.site.identitymd.eth.limo (the first run). |
 | **Contract code** | [`src/Stacker.sol`](src/Stacker.sol) (the cashback funnel) and [`src/ProjectRegistry.sol`](src/ProjectRegistry.sol) (the oracle-decided project list) in this repository. The first Sepolia launch's code, built and deployed by the [IMD swarm](https://imd.fun), is in the [launch-1129 repository](https://github.com/identity-md-launches/launch-1129-build-imd-acc-sepolia-test). |
 
@@ -115,7 +115,7 @@ The registry `main` will use on mainnet, now with owed bonds (a bond the token r
 
 ### Sepolia test run 5 (live, launch #1428, block 11,899,694)
 
-The registry `main` will use on mainnet: test run 4's plus version 3 of the panel rules (the trader is router `hookData`, else the router's `msgSender()`, never a router; LP fees don't count toward the fee guard) and owner-only applications (a project that reports an `owner()` is applied for by that owner or itself), with Sepolia settings, wired to test run 2's Stacker. Code: [launch-1428 repository](https://github.com/identity-md-launches/launch-1428-launch-imd-acc-s-sepolia-test), commit `9062c14a`; its `src/` is byte for byte `main`'s ([history, section 38](docs/history.md#38-sepolia-test-run-5-live-launch-1428-2026-10-12)). Source verified on Sourcify. The website, the data API and the test tools use this registry.
+The registry `main` will use on mainnet: test run 4's plus version 3 of the panel rules (the trader is router `hookData`, else the router's `msgSender()`, never a router; LP fees don't count toward the fee guard) and owner-only applications (a project that reports an `owner()` is applied for by that owner or itself), with Sepolia settings, wired to test run 2's Stacker. Code: [launch-1428 repository](https://github.com/identity-md-launches/launch-1428-launch-imd-acc-s-sepolia-test), commit `9062c14a`; its `src/` is byte for byte `main`'s ([history, section 38](docs/history.md#38-sepolia-test-run-5-live-launch-1428-2026-10-12)). Source verified on Sourcify. The website, the data API and the test tools use this registry. Live trial: SelfCredit rejected 11 to 0; the TrialVenue listed from block 11,900,332 and defended ([history, sections 39 to 41](docs/history.md#41-test-run-5-trial-complete-the-trialvenue-defended-a-clearer-trader-rule-drafted-2026-10-12)).
 
 | Contract | Address | Notes |
 |---|---|---|
@@ -154,7 +154,8 @@ The all-traders dashboard and leaderboards (top traders, top projects, 7-day and
 | Project | Status |
 |---|---|
 | PLEA v10 (hook `0x3d4C…68Cc`, first Stacker) | Not listed. Its listing job for the first test page ([`jobs/3-list-plea.md`](jobs/3-list-plea.md)) is no longer needed, since test run 2 replaces that page. |
-| PLEA, next version (hook `0x2d5a…a8cc`, Stacker of test run 2) | **Listed** on the test run 4 registry at 50 bps from block 11,898,188 (2026-10-12, signed yes 11 of 12), and defended against a challenge (11 of 11). Not yet applied to test run 5's registry, whose version 3 trader rule its sell fallback to `sender` likely fails; the site and data API now count points on test run 5's registry. (On test run 2's registry, with the version 1 rules, its two applications split the panel.) |
+| PLEA, next version (hook `0x2d5a…a8cc`, Stacker of test run 2) | **Listed** on the test run 4 registry at 50 bps from block 11,898,188 (2026-10-12, signed yes 11 of 12), and defended against a challenge (11 of 11). Not yet applied to test run 5's registry: its sell fallback to `sender` fails the version 3 trader rule, and PLEA's next hook (branch `testnet4`: hookData, else the router's `msgSender()`) is not deployed yet; the site and data API now count points on test run 5's registry. (On test run 2's registry, with the version 1 rules, its two applications split the panel.) |
+| imd/acc TrialVenue (`0xf252…6fef`, Sepolia, [`test/trial/TrialVenue.sol`](test/trial/TrialVenue.sol)) | **Listed** on the test run 5 registry at 50 bps from block 11,900,332 (2026-10-12, signed yes 11 of 14) and defended against a challenge (11 of 12): the trial's positive case, a small IMD/TRIAL pool with locked liquidity that credits 0.5% and burns 0.5% of each trade's fee. |
 
 ## Integrating a project
 
@@ -218,7 +219,7 @@ src/ProjectRegistry.sol   the project list decided by an IdentityMD oracle panel
 src/oracle/               the oracle attestation verifier (EIP-712), shared with PLEA
 test/                     Foundry tests: unit, edge cases, fuzz, invariants, deployment, mainnet and Sepolia forks
   mocks/                  TestIMD, TestSIMD (a copy of StakedIMD), a mock Intake: test doubles only
-  trial/                  SelfCredit: the registry trial's negative case (Sepolia only, never listed)
+  trial/                  SelfCredit and TrialVenue: the registry trial's negative and positive cases (Sepolia only)
 lib/                      forge-std, OpenZeppelin and Solady files, vendored
 launch.json               the next IMD launch's manifest: the mainnet ProjectRegistry (the Stacker is live)
 foundry.toml              solc 0.8.26, cancun, 10,000 optimizer runs, bytecode_hash none
@@ -227,7 +228,7 @@ docs/
   design.md               design detail: building blocks, points, ProjectRegistry, v2 ETH route,
                           decisions, open questions, launch settings, btc/acc lessons
   history.md              what happened so far, with the checks and transactions behind it
-  panel-rules-v2.md       clearer oracle panel rules for the mainnet registry (draft, rehearsed on Sepolia)
+  panel-rules-v2.md       the oracle panel's rules: versions 2 and 3 (live on Sepolia) and the proposed 3.1
   data-api.md             the data API: JSON snapshot files, their format and stability promise
   explainer.html          a one-page explainer for traders and projects
 jobs/                     IMD swarm job prompts, in order
