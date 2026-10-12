@@ -7,7 +7,7 @@ const { chromium } = require("playwright");
 
 export const ANVIL = process.env.ANVIL || "http://127.0.0.1:8545";
 export const ACCOUNT = (process.env.ACCOUNT || "0xa987EF2AA4d2c0558CC6405F1A8253507274Dc5d").toLowerCase();
-export const RPC_HOSTS = /rpc\.sepolia\.ethpandaops\.io|sepolia\.rpc\.sentio\.xyz|ethereum-sepolia-rpc\.publicnode\.com/;
+export const RPC_HOSTS = /rpc\.sepolia\.ethpandaops\.io|sepolia\.rpc\.sentio\.xyz|ethereum-sepolia-rpc\.publicnode\.com|sepolia\.drpc\.org/;
 const AXE = readFileSync(new URL("./node_modules/axe-core/axe.min.js", import.meta.url), "utf8");
 
 export async function anvil(method, params = []) {
@@ -44,6 +44,7 @@ const WALLET_INIT = `(() => {
     removeListener(ev, f) { listeners[ev] = (listeners[ev] || []).filter((g) => g !== f); return provider; },
   };
   window.__testWallet = { emit };
+  if (!window.ethereum) window.ethereum = provider; // sites that read window.ethereum, like MetaMask and Rabby set it
   const info = Object.freeze({ uuid: "7e57c0de-0000-4000-8000-000000000001", name: "Test Wallet", rdns: "test.wallet",
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'/%3E" });
   const announce = () => window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: Object.freeze({ info, provider }) }));

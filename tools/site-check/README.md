@@ -22,3 +22,14 @@ node refresh-bug.mjs            # does a data refresh remove the Apply question 
 ```
 
 `SITE` overrides the site URL. Results print as PASS/FAIL lines; `layout.mjs` also writes `layout-live.json` or `layout-fork.json`.
+
+## Listing trial through the root site
+
+`trial.mjs` runs one step of the registry trial through the GitHub Pages site (https://imdacc.fun/), with a wallet that signs as the test wallet `0x4b91…6821` (key from `PONDPAD_TESTNET_KEY`, never printed). The page finds it as `window.ethereum`, like MetaMask or Rabby.
+
+```sh
+TARGET=http://127.0.0.1:8545 node trial.mjs plea        # rehearsal on the fork: the page's RPCs go there too
+LIVE_OK=1 TARGET=https://ethereum-sepolia-rpc.publicnode.com node trial.mjs plea   # live Sepolia: owner's approval first
+```
+
+Steps: `plea` (approve the fee, `applyListing` for PLEA's hook at 50 bps), `selfcredit` (the same for `SelfCredit`), `challenge` (mint 10 oracle test IMD, approve fee + bond, `challengeForBeneficiary` on PLEA from its project page). Each step caps how many transactions it may send. On the fork, `fork-answer.sh` plays the panel's answer between steps (and `cast rpc evm_increaseTime 3601` passes the cooldown).

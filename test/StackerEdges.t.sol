@@ -242,6 +242,7 @@ contract StackerEdgesTest is BaseTest {
     {
         amount = bound(amount, 1, 1_000_000e18);
         who = who == address(0) ? address(1) : who;
+        vm.assume(who != address(stacker) && who != address(sImd) && who != address(imd));
         vm.prank(OWNER);
         sImd.setPaused(true);
 

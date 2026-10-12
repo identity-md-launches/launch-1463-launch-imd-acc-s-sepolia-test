@@ -364,8 +364,11 @@ contract StackerTest is BaseTest {
     // ───────────────────────────── fuzz ─────────────────────────────
 
     function testFuzz_credit(address who, uint256 amount) public {
-        // The Stacker or the vault as trader would hold the shares, which the checks below forbid.
-        vm.assume(who != address(0) && who != address(stacker) && who != address(sImd));
+        // Invalid recipients have dedicated rejection coverage in StackerAuditRegression.t.sol.
+        vm.assume(
+            who != address(0) && who != address(stacker) && who != address(sImd)
+                && who != address(imd)
+        );
         amount = bound(amount, 1, 1_000_000e18);
         uint256 preview = sImd.previewDeposit(amount);
 

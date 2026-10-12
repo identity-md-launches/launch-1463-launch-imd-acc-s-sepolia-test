@@ -51,10 +51,54 @@ contract SepoliaForkTest is Test {
         );
     }
 
-    /// @dev The live Stacker runs this build byte for byte (same two immutables), so test run 3
-    /// can wire a new registry to it instead of deploying another Stacker.
-    function test_sepolia_liveStackerIsThisBuild() public onlyFork {
-        assertEq(LIVE_STACKER.code, address(stacker).code);
+    /// @dev The mainnet audit added recipient validation, so byte-for-byte equality with #1294
+    /// is no longer expected. Compare valid credits from the same vault state instead.
+    function test_sepolia_liveStackerValidCreditMatchesMainnetCandidate() public onlyFork {
+        Stacker live = Stacker(LIVE_STACKER);
+        assertEq(address(live.IMD()), address(IMD));
+        assertEq(address(live.SIMD()), address(SIMD));
+        uint256 previousTotal = live.totalStacked();
+        uint256 previousProject = live.projectStacked(project);
+        uint256 previousShares = live.projectShares(project);
+        uint256 checkpoint = vm.snapshotState();
+        vm.prank(project);
+        uint256 candidateShares = stacker.credit(trader, 1e18);
+        uint256 candidateBalance = SIMD.balanceOf(trader);
+        uint256 candidateAssets = SIMD.totalAssets();
+        assertTrue(vm.revertToStateAndDelete(checkpoint));
+
+        vm.startPrank(project);
+        IMD.approve(LIVE_STACKER, type(uint256).max);
+        uint256 liveShares = live.credit(trader, 1e18);
+        vm.stopPrank();
+        assertEq(liveShares, candidateShares);
+        assertEq(SIMD.balanceOf(trader), candidateBalance);
+        assertEq(SIMD.totalAssets(), candidateAssets);
+        assertEq(live.totalStacked() - previousTotal, 1e18);
+        assertEq(live.projectStacked(project) - previousProject, 1e18);
+        assertEq(live.projectShares(project) - previousShares, candidateShares);
+    }
+
+    function test_sepolia_mainnetCandidateRejectsLegacyUnreachableRecipients() public onlyFork {
+        uint256 beforeStacker = SIMD.balanceOf(LIVE_STACKER);
+        uint256 beforeVault = SIMD.balanceOf(address(SIMD));
+        vm.startPrank(project);
+        IMD.approve(LIVE_STACKER, type(uint256).max);
+        uint256 stuckAtStacker = Stacker(LIVE_STACKER).credit(LIVE_STACKER, 1e18);
+        uint256 stuckAtVault = Stacker(LIVE_STACKER).credit(address(SIMD), 1e18);
+        vm.expectRevert(Stacker.InvalidTrader.selector);
+        stacker.credit(address(stacker), 1e18);
+        vm.expectRevert(Stacker.InvalidTrader.selector);
+        stacker.credit(address(SIMD), 1e18);
+        vm.stopPrank();
+        assertGt(stuckAtStacker, 0);
+        assertGt(stuckAtVault, 0);
+        assertEq(SIMD.balanceOf(LIVE_STACKER), beforeStacker + stuckAtStacker);
+        assertEq(SIMD.balanceOf(address(SIMD)), beforeVault + stuckAtVault);
+        assertEq(SIMD.balanceOf(address(stacker)), 0);
+        assertEq(stacker.totalStacked(), 0);
+        assertEq(IMD.balanceOf(project), 10_000e18 - 2e18);
+        assertEq(IMD.allowance(address(stacker), address(SIMD)), 0);
     }
 
     function test_sepolia_creditEventAndTotals() public onlyFork {

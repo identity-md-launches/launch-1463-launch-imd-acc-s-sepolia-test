@@ -47,7 +47,7 @@ One file per chain: [`listings/sepolia.json`](../listings/sepolia.json) now, `li
 - [ ] The cashback is the stated `rateBps` of the trade, between 25 and 100.
 - [ ] **Fee guard:** the part of the fee that really leaves the project is at least as large as the cashback (see below).
 - [ ] If its rate or fees can change later, the limits are in the code: every allowed rate stays between 25 and 100, and every allowed setting keeps the fee guard. A change inside those limits keeps the listing.
-- [ ] It credits the real trader: router `hookData`, else `sender`, never `tx.origin`.
+- [ ] It resolves the real trader from valid router `hookData`, else the router's active `msgSender()`, else `sender` only if it has no code; never `tx.origin`. Validate destinations and use the same resolved trader for plain-IMD fallback. Invalid data may fall back to a separately resolved caller; an unknown router is never paid. Unsupported routes need trader data before cashback is enabled (README rule 3).
 - [ ] A failed credit never blocks a trade: the trader gets plain IMD instead.
 - [ ] It checks gas up front, so a wallet's gas estimate can't choose a path without cashback.
 

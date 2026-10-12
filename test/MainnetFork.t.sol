@@ -99,4 +99,43 @@ contract MainnetForkTest is Test {
         assertGe(got + 1e12, 2e18);
         assertEq(IERC20(IMD).balanceOf(trader), got);
     }
+
+    function test_fork_firstCreditNeedsInitializationGas() public onlyFork {
+        // The original README's 136k x 1.3 budget fails until a credit succeeds in full.
+        for (uint256 i; i < 2; ++i) {
+            vm.prank(project);
+            (bool ok, bytes memory data) =
+                address(stacker).call{gas: 177_000}(abi.encodeCall(Stacker.credit, (trader, 1e18)));
+            assertFalse(ok);
+            assertEq(data.length, 0, "out of gas");
+            assertEq(IERC20(IMD).balanceOf(project), 1_000e18);
+            assertEq(IERC20(IMD).allowance(address(stacker), SIMD), 0);
+            assertEq(stacker.totalStacked(), 0);
+        }
+
+        vm.prank(project);
+        uint256 shares = stacker.credit{gas: 350_000}(trader, 1e18);
+        assertGt(shares, 0);
+        assertEq(vault.balanceOf(trader), shares);
+        assertEq(IERC20(IMD).allowance(address(stacker), SIMD), type(uint256).max);
+        assertEq(stacker.totalStacked(), 1e18);
+
+        address newTrader = makeAddr("gas fork new trader");
+        vm.prank(project);
+        shares = stacker.credit{gas: 177_000}(newTrader, 1e18);
+        assertGt(shares, 0);
+        assertEq(vault.balanceOf(newTrader), shares);
+        assertEq(stacker.totalStacked(), 2e18);
+    }
+
+    function test_fork_readmeBudgetFundsColdFirstCredit() public onlyFork {
+        // No prior credit or balance/allowance reads in this transaction: exercise cold state.
+        vm.prank(project);
+        uint256 shares = stacker.credit{gas: 350_000}(trader, 1e18);
+        assertGt(shares, 0);
+        assertEq(vault.balanceOf(trader), shares);
+        assertEq(stacker.projectStacked(project), 1e18);
+        assertEq(IERC20(IMD).balanceOf(address(stacker)), 0);
+        assertEq(vault.balanceOf(address(stacker)), 0);
+    }
 }

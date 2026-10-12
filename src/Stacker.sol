@@ -24,7 +24,7 @@ interface IStakedIMD {
 ///
 /// Integrators are expected to wrap `credit` in try/catch: it reverts (and moves nothing) when the
 /// vault refuses the deposit, when the project's allowance or balance is short, or when the trader
-/// is zero.
+/// is zero, the Stacker itself, the IMD token, or the vault itself.
 contract Stacker is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -50,6 +50,8 @@ contract Stacker is ReentrancyGuard {
 
     /// @notice `credit` was called with the zero address as trader.
     error ZeroTrader();
+    /// @notice Shares sent to the Stacker, IMD token or vault itself would be irrecoverable.
+    error InvalidTrader();
     /// @notice The vault's `asset()` is not the IMD address given to the constructor.
     error AssetMismatch(address vaultAsset, address imd);
     /// @notice The vault minted no shares for a non-zero deposit (would silently lose the IMD).
@@ -66,14 +68,18 @@ contract Stacker is ReentrancyGuard {
 
     /// @notice Pull `imdAmount` IMD from the caller and stake it for `trader`; the sIMD shares are
     /// minted directly to `trader`. Returns the shares minted.
-    /// @dev Reverts with `ZeroTrader` for a zero trader. Returns 0 (no transfer, no event, no state
-    /// change) for a zero amount. Bubbles up the vault's and token's errors unchanged.
+    /// @dev Reverts with `ZeroTrader` for a zero trader, or `InvalidTrader` for this contract,
+    /// the IMD token or vault. Returns 0 (no transfer, no event, no state change) for a zero amount
+    /// and a valid trader. Bubbles up the vault's and token's errors unchanged.
     function credit(address trader, uint256 imdAmount)
         external
         nonReentrant
         returns (uint256 shares)
     {
         if (trader == address(0)) revert ZeroTrader();
+        if (trader == address(this) || trader == address(SIMD) || trader == address(IMD)) {
+            revert InvalidTrader();
+        }
         if (imdAmount == 0) return 0;
 
         if (!_vaultReady) {

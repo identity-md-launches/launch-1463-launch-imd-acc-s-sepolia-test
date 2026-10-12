@@ -1,0 +1,29 @@
+[
+  {
+    "name": "sepolia",
+    "id": 11155111,
+    "stacker": "0x0457276d7b036818b3eddc1a4a3fceda61e9314d",
+    "stackerBlock": 11891109,
+    "registry": "0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102",
+    "registryBlock": 11897725,
+    "confirmations": 12,
+    "rpcs": [
+      "https://rpc.sepolia.ethpandaops.io",
+      "https://ethereum-sepolia-rpc.publicnode.com",
+      "https://sepolia.drpc.org"
+    ]
+  },
+  {
+    "name": "ethereum",
+    "id": 1,
+    "stacker": "0x06909f672301f28a810f78cfe7a754851269f4f0",
+    "stackerBlock": 26176629,
+    "registry": null,
+    "registryBlock": null,
+    "confirmations": 12,
+    "rpcs": [
+      "https://ethereum-rpc.publicnode.com",
+      "https://eth.drpc.org"
+    ]
+  }
+]

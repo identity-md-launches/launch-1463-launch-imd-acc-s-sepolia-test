@@ -9,7 +9,7 @@ The [README](../README.md) is the overview. This file keeps the design detail an
 | `Stacker` (shared contract) | `credit(trader, imdAmount)`: pulls IMD from the caller and calls `sIMD.deposit(amount, trader)`. The caller is the project. Emits `Stacked(project, trader, imd, shares)` and keeps per-project totals on chain. No owner; the IMD and sIMD addresses are immutable. Deposits on every credit. |
 | Integration rule | The project wraps `credit` in `try/catch`. If it fails (vault paused, anything else), the hook sends the cashback to the trader as plain IMD instead, so **a trade never reverts because of imd/acc**. |
 | Drop-in hook (planned) | For IMD pools without their own hook. Takes the cashback in IMD in `afterSwap` and calls `credit`. Includes the `afterSwap` logic that Uniswap's frontend whitelisting needs (a btc/acc lesson). |
-| Trader identity | The router passes the real trader in `hookData`. Fall back to `sender`; never use `tx.origin`. |
+| Trader identity | Valid router `hookData`, else the router's active `msgSender()`, else `sender` only if it has no code; never `tx.origin`. Validate recipients and never pay an unresolved forwarding router. See README rule 3 for fallback and unsupported routes. |
 | Site | "Your stack" (sIMD from cashback, per project, and its IMD value now), plus leaderboards for top stackers and top projects. |
 
 ## Which projects earn points
@@ -52,7 +52,7 @@ The question names the Stacker, the project, the chain and the registry, the sta
 - **beneficiary:** the project's owner, or a wallet its verified source or official website names as its team or treasury. This stops someone from applying for another team's project with their own wallet as beneficiary;
 - **evidence:** the verified source on the chain's explorer; unverified code means false.
 
-**Version 2 (2026-10-12, in `src/ProjectRegistry.sol` on `main`; the deployed Sepolia registry still sends version 1):** after PLEA's applications split the panel, clearer rules were written and rehearsed (11 of 13 yes, signed): [panel-rules-v2.md](panel-rules-v2.md). They add that a plain-IMD fallback or other uncredited payout is allowed and earns no points, that the trader may come from the swap caller's `hookData`, that value no owner or team wallet can ever withdraw leaves for good, and that Etherscan, Blockscout or Sourcify count as verified source. Each rule must stay under 512 characters.
+**Version 2 (2026-10-12, in `src/ProjectRegistry.sol` on `main`, and live in Sepolia test runs 3 and 4; test run 2's registry still sends version 1):** after PLEA's applications split the panel, clearer rules were written and rehearsed (11 of 13 yes, signed): [panel-rules-v2.md](panel-rules-v2.md). They add that a plain-IMD fallback or other uncredited payout is allowed and earns no points, that the trader may come from the swap caller's `hookData`, that value no owner or team wallet can ever withdraw leaves for good, and that Etherscan, Blockscout or Sourcify count as verified source. Each rule must stay under 512 characters.
 
 A challenge asks whether the listed project still meets all of them, with the challenger's reason as untrusted text. Panel: 15 seats, 11 must agree. IMD's free check accepted this question (no blockers, judged answerable).
 
@@ -101,6 +101,8 @@ Confirmed by the owner on 2026-10-11, for both chains.
 6. The test page shows the registry's state and counts points by its listing periods.
 
 **Results so far (2026-10-12, [history section 17](history.md#17-registry-trial-pleas-first-applications-2026-10-12)):** PLEA applied twice and both panels split (8 and 9 of 13 yes, 11 needed), so both were cleared as no-answer cases; the false answers read the plain-IMD fallback, a claims payout that skips the Stacker and the trader from `hookData` as breaking the trading rule. The negative case `SelfCredit` was rejected 12 to 0 with a signed answer. The listing and challenge steps wait for a listed project.
+
+**Live trial on test run 4 (2026-10-12, [history section 29](history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)), with the version 2 rules:** PLEA applied through the website and was **listed by a signed yes** (11 of 12, block 11,898,188); `SelfCredit` was rejected 12 to 0; after the 1-hour cooldown a challenge against PLEA was **defended** (11 of 11): the bond went to its beneficiary and the cooldown wasn't restarted. Steps 2, 3 and 5 above are done live; a delisting by a signed no was shown on a fork only.
 
 ## Points now, token maybe later
 
@@ -211,6 +213,18 @@ The only way out is to the StackReceiver, whose address is fixed at deploy. The 
 
 **Accepted trade-offs:** the trader's sIMD lands on Ethereum, not on their own chain; delivery waits for the next flush; and it relies on LayerZero and IMD's bridge setup. A later step could send bridged sIMD back to the trader's own chain, or use local vaults if the IMD team deploys sIMD on other chains (worth asking them).
 
+
+### Listing on other chains
+
+**One registry per chain** (decided 2026-10-11), with the same contract code. A project applies on the chain where it trades, through the same Apply page with a chain picker; the wallet switches to that chain.
+
+- **Fees and bonds in that chain's IMD.** The Intake sells oracle answers on Ethereum, Robinhood Chain and Sepolia, at 0.5 of each chain's IMD (checked 2026-10-12: IMD's capabilities list Robinhood Chain's asset as IMD `0x5f7b…7127`, and the Robinhood Intake's `priceOf` returns 0.5 IMD). So on Robinhood Chain the applicant pays the oracle fee, and a challenger posts the bond, in Robinhood IMD: the same token over IMD's own LayerZero bridge. Jobs and launches (deploying a registry or a RemoteStacker) are still paid in IMD on Ethereum; IMD doesn't sell them on other chains yet.
+- **A Robinhood Chain registry** takes the Intake at the same address, `oracleAsset` = Robinhood IMD, `stacker` = the RemoteStacker on Robinhood Chain (so the RemoteStacker deploys first), and `questionChainId` = 4663: the oracle reads Robinhood Chain (IMD's free check accepted a question about a 4663 contract and judged it answerable). Bond and cooldown are the owner's call; recommendation: mainnet's 20 IMD and 7 days. Check the Intake's callback gas on Robinhood Chain before the launch (200k on Ethereum, 1M on Sepolia).
+- **No code change for the question.** It names the chain (`block.chainid`) and the Stacker it was deployed with. One wording point: it says cashback is paid "as staked IMD through the Stacker", while on Robinhood Chain it waits in the RemoteStacker and reaches the trader as sIMD on Ethereum. Rehearse one question there before relying on it, as with the version 2 rules.
+- **Points** for such a project come from the RemoteStacker's `Queued` events on its chain, inside the listing periods of that chain's registry (in that chain's blocks). The dashboard adds each trader's points across chains (the same address on every chain, except smart-contract wallets: rule 7 above).
+- **Base and Arbitrum:** the oracle reads them (and BNB Chain), but there is no Intake there and IMD can't launch there yet, so no registry or RemoteStacker for now. Recommendation: wait until IMD supports them. The alternative, an Ethereum registry that also takes applications for projects on other chains, needs a code change (the project's chain in each record and question) and its own rehearsal.
+- **Order:** RemoteStacker and StackReceiver built, tested and launched → the Robinhood Chain registry launched → one rehearsed question → PondPad applies.
+
 ## Who pays the gas
 
 - **On Ethereum:** the trader, inside their own swap. The project pays no extra gas, and imd/acc has no treasury or relayer. With the mainnet Stacker that is about 0.11M gas for a new trader and 0.075M for a repeat one, beyond the base cost of the swap: under 2¢ at today's 0.06 gwei and ETH at $2,505.
@@ -274,7 +288,7 @@ Known and harmless: a credit mints sIMD to the trader, and the vault's one-block
 | `references` | `evm-contracts-launch`, `defi-native`, `eth-security`, `eth-testing`, `eth-frontend-ux`, `better-interface`, `pashov-skill`, `solidity-security-review` |
 | Prompt | [`jobs/1-sepolia-launch.md`](../jobs/1-sepolia-launch.md) |
 
-### Ethereum mainnet (ready, not paid)
+### Ethereum mainnet (live, launch #1409)
 
 | Field | Value |
 |---|---|

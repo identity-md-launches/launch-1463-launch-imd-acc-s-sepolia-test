@@ -2,7 +2,7 @@
 
 The rules (`definitions`) the IdentityMD oracle panel reads when it judges a listing. Version 1 is what the deployed Sepolia ProjectRegistry sends; it is fixed in that contract's code. Version 2 says the same things more plainly, after PLEA's two Sepolia applications split the panel ([history, section 17](history.md#17-registry-trial-pleas-first-applications-2026-10-12)). It was rehearsed once on Sepolia and reached a signed answer ([history, section 18](history.md#18-clearer-panel-rules-rehearsed-2026-10-12)).
 
-**In `src/ProjectRegistry.sol` on `main` since 2026-10-12**, approved by the owner together with IMD's Sepolia fixes, for the mainnet registry. Not deployed anywhere yet; the Sepolia registry keeps version 1. A local deployment returns these rules for PLEA's hook character for character as rehearsed.
+**In `src/ProjectRegistry.sol` on `main` since 2026-10-12**, approved by the owner together with IMD's Sepolia fixes, for the mainnet registry. Deployed on Sepolia in test runs 3 and 4 (launches #1371 and #1378); test run 2's registry keeps version 1. A local deployment returns these rules for PLEA's hook character for character as rehearsed.
 
 ## The rules
 
@@ -38,5 +38,7 @@ For a challenge, `rate` keeps version 1's challenge form (the rate in force must
 | Version 1, PLEA's first application | 8 | 5 | split, cleared |
 | Version 1, PLEA's second application | 9 | 4 | split, cleared |
 | Version 2, rehearsal | 11 | 2 | **signed yes** (11 needed) |
+| Version 2, test run 4 registry, live application | 11 | 1 | **signed yes: listed** ([history, section 29](history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)) |
+| Version 2 (challenge form), live challenge | 11 | 0 | **signed yes: defended** |
 
-With version 2 no member raised the trading, trader, rate or evidence rules. The two "no" answers were about PLEA's own fee split: its owner can enter and win Seasons prizes, and a public `rebalance()` pays a 0.01 IMD keeper tip from the hook's retained IMD to whoever calls it. The margin was exactly the quorum, so one rehearsal is not proof that every panel will agree.
+With version 2 no member raised the trading, trader, rate or evidence rules. The two "no" answers were about PLEA's own fee split: its owner can enter and win Seasons prizes, and a public `rebalance()` pays a 0.01 IMD keeper tip from the hook's retained IMD to whoever calls it. The margin was exactly the quorum, so one rehearsal is not proof that every panel will agree. The live application on test run 4 again reached exactly 11 yes; its one no was the same keeper tip. The live challenge was unanimous (11 of 11).
