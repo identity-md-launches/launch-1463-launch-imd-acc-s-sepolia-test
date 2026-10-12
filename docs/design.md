@@ -57,7 +57,7 @@ The question names the Stacker, the project, the chain and the registry, the sta
 
 A challenge asks whether the listed project still meets all of them, with the challenger's reason as untrusted text. Panel: 15 seats, 11 must agree. IMD's free check accepted this question (no blockers, judged answerable).
 
-**Filed under chain 1.** The oracle has no Sepolia RPC (its check refuses chain 11155111), so Sepolia questions are filed under chain 1, like PLEA's gate does, and the text names Sepolia. The registry's `questionChainId` is 1 on Sepolia and mainnet; it would be 4663 on Robinhood Chain.
+**Filed under chain 1.** The oracle has no Sepolia RPC (its check refuses chain 11155111), so Sepolia questions are filed under chain 1, like PLEA's gate does, and the text gives the real chain id (11155111) of the Stacker, the project and the registry. The registry's `questionChainId` is 1 on Sepolia and mainnet; it would be 4663 on Robinhood Chain.
 
 ### What an answer must pass
 1. It comes from the Intake, for a request this registry made and hasn't settled.

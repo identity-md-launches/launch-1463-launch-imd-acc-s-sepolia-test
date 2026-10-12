@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | **Ethereum mainnet: the Stacker is live** at [`0x0690…f4f0`](https://etherscan.io/address/0x06909f672301f28a810f78cfe7a754851269f4f0) (launch #1409). Sepolia live: the Stacker (test run 2, launch #1294) and the ProjectRegistry the mainnet one will use (test run 4, launch #1378). Live listing trial done on 2026-10-12: PLEA listed by a signed yes (11 of 12) and then defended against a challenge (11 of 11, bond to its beneficiary); the negative case rejected 12 to 0 ([history, section 29](docs/history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)). Next: PLEA mainnet integrates; then the mainnet registry. |
+| **Status** | **Ethereum mainnet: the Stacker is live** at [`0x0690…f4f0`](https://etherscan.io/address/0x06909f672301f28a810f78cfe7a754851269f4f0) (launch #1409). Sepolia live: the Stacker (test run 2, launch #1294) and the ProjectRegistry the mainnet one will use (test run 5, launch #1428: rules version 3 and owner-only applications). Live listing trial on test run 4, 2026-10-12: PLEA listed by a signed yes (11 of 12) and then defended against a challenge (11 of 11, bond to its beneficiary); the negative case rejected 12 to 0 ([history, section 29](docs/history.md#29-live-listing-trial-on-the-test-run-4-registry-plea-listed-and-defended-2026-10-12)). Next: PLEA mainnet integrates; then the mainnet registry. |
 | **Website** | https://imdacc.fun (GitHub Pages from this repository; the old https://khaed1.github.io/imd-acc/ redirects there: live Sepolia data, real wallet transactions on test run 4, docs). Older IMD-hosted pages show older registries: https://imd-acc-sepolia-test-run-2.sites.imd.fun/ (test run 2) and https://imd-acc-sepolia-test-run.site.identitymd.eth.limo (the first run). |
 | **Contract code** | [`src/Stacker.sol`](src/Stacker.sol) (the cashback funnel) and [`src/ProjectRegistry.sol`](src/ProjectRegistry.sol) (the oracle-decided project list) in this repository. The first Sepolia launch's code, built and deployed by the [IMD swarm](https://imd.fun), is in the [launch-1129 repository](https://github.com/identity-md-launches/launch-1129-build-imd-acc-sepolia-test). |
 
@@ -113,6 +113,14 @@ The registry `main` will use on mainnet, now with owed bonds (a bond the token r
 |---|---|---|
 | ProjectRegistry | [`0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102`](https://sepolia.etherscan.io/address/0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102) | Stacker `0x0457…314d`, fee `ORACLE_FEE()` 0.5 test IMD of `0x44a1…f89a` (read live from Intake v2), challenge bond 5 test IMD, cooldown 1 hour, panel 15/11, 1-day expiry, beneficiary handoff at most once per day, owed bonds claimed with `claimBond(to)`. Challenges use `challengeForBeneficiary(project, reason, expectedBeneficiary)`. |
 
+### Sepolia test run 5 (live, launch #1428, block 11,899,694)
+
+The registry `main` will use on mainnet: test run 4's plus version 3 of the panel rules (the trader is router `hookData`, else the router's `msgSender()`, never a router; LP fees don't count toward the fee guard) and owner-only applications (a project that reports an `owner()` is applied for by that owner or itself), with Sepolia settings, wired to test run 2's Stacker. Code: [launch-1428 repository](https://github.com/identity-md-launches/launch-1428-launch-imd-acc-s-sepolia-test), commit `9062c14a`; its `src/` is byte for byte `main`'s ([history, section 38](docs/history.md#38-sepolia-test-run-5-live-launch-1428-2026-10-12)). Source verified on Sourcify. The website, the data API and the test tools use this registry.
+
+| Contract | Address | Notes |
+|---|---|---|
+| ProjectRegistry | [`0x5f63cdead0f5f693b8964d82b56155f55645ccea`](https://sepolia.etherscan.io/address/0x5f63cdead0f5f693b8964d82b56155f55645ccea) | Stacker `0x0457…314d`, fee `ORACLE_FEE()` 0.5 test IMD of `0x44a1…f89a` (read live from Intake v2), challenge bond 5 test IMD, cooldown 1 hour, panel 15/11, 1-day expiry, one beneficiary handoff per day, owed bonds, owner-only applications (`projectOwner`, `NotProjectOwner`). |
+
 ### Ethereum mainnet (live, launch #1409, block 26,176,629)
 
 | Contract | Address | Notes |
@@ -146,7 +154,7 @@ The all-traders dashboard and leaderboards (top traders, top projects, 7-day and
 | Project | Status |
 |---|---|
 | PLEA v10 (hook `0x3d4C…68Cc`, first Stacker) | Not listed. Its listing job for the first test page ([`jobs/3-list-plea.md`](jobs/3-list-plea.md)) is no longer needed, since test run 2 replaces that page. |
-| PLEA, next version (hook `0x2d5a…a8cc`, Stacker of test run 2) | **Listed** on the test run 4 registry at 50 bps from block 11,898,188 (2026-10-12, signed yes 11 of 12), and defended against a challenge (11 of 11). Its credits from that block earn points. (On test run 2's registry, with the version 1 rules, its two applications split the panel.) |
+| PLEA, next version (hook `0x2d5a…a8cc`, Stacker of test run 2) | **Listed** on the test run 4 registry at 50 bps from block 11,898,188 (2026-10-12, signed yes 11 of 12), and defended against a challenge (11 of 11). Not yet applied to test run 5's registry, whose version 3 trader rule its sell fallback to `sender` likely fails; the site and data API now count points on test run 5's registry. (On test run 2's registry, with the version 1 rules, its two applications split the panel.) |
 
 ## Integrating a project
 
