@@ -9,7 +9,7 @@ The [README](../README.md) is the overview. This file keeps the design detail an
 | `Stacker` (shared contract) | `credit(trader, imdAmount)`: pulls IMD from the caller and calls `sIMD.deposit(amount, trader)`. The caller is the project. Emits `Stacked(project, trader, imd, shares)` and keeps per-project totals on chain. No owner; the IMD and sIMD addresses are immutable. Deposits on every credit. |
 | Integration rule | The project wraps `credit` in `try/catch`. If it fails (vault paused, anything else), the hook sends the cashback to the trader as plain IMD instead, so **a trade never reverts because of imd/acc**. |
 | Drop-in hook (planned) | For IMD pools without their own hook. Takes the cashback in IMD in `afterSwap` and calls `credit`. Includes the `afterSwap` logic that Uniswap's frontend whitelisting needs (a btc/acc lesson). |
-| Trader identity | Valid router `hookData`, else the router's active `msgSender()`, else `sender` only if it has no code; never `tx.origin`. Validate recipients and never pay an unresolved forwarding router. See README rule 3 for fallback and unsupported routes. |
+| Trader identity | Valid router `hookData`, else the router's active `msgSender()`, else `sender` only if it has no code; never `tx.origin`. Reject zero, the Stacker, the IMD token, the vault and the router itself; the address `msgSender()` reports is a valid trader even when it is a contract. See README rule 3 for fallback and unsupported routes. |
 | Site | "Your stack" (sIMD from cashback, per project, and its IMD value now), plus leaderboards for top stackers and top projects. |
 
 ## Which projects earn points
@@ -48,7 +48,7 @@ Anyone can call `credit` with their own IMD. That is just staking for someone, a
 The question names the Stacker, the project, the chain and the registry, the stated rate and beneficiary, and the applicant's name and URL as untrusted text. It asks for **true only if every rule holds**, judged from the verified source and on-chain state:
 - **trading:** a trading venue that calls `credit` only while executing a trade, for that trade's trader, with IMD from that trade's fees;
 - **rate:** at application, the stated rate is the one in force and lies between 25 and 100 bps; at a challenge, the rate in force lies between 25 and 100 bps (the application rate is historical, as deployed on Sepolia); if the rate can change, the code keeps it in that range;
-- **trader** (version 3, for mainnet): valid router `hookData`, else the router's `msgSender()` during the swap, else `sender` only if it has no code; never `tx.origin`, never an unresolved router;
+- **trader** (version 3.1, for mainnet): valid router `hookData`, else the router's `msgSender()` during the swap, else `sender` only if it has no code; never `tx.origin`, never the router itself; a contract `msgSender()` reports is a valid trader;
 - **feeGuard:** the parts of the fee that leave for good are at least the cashback. For mainnet, the wording adds: if the rate or the fee split can change, the code must keep this true for every allowed setting; and (version 3) LP fees and anything returned to the trader, owner or team don't count;
 - **beneficiary:** the project's owner, or a wallet its verified source or official website names as its team or treasury. This stops someone from applying for another team's project with their own wallet as beneficiary;
 - **evidence:** the verified source on the chain's explorer; unverified code means false.
