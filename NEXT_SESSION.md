@@ -1,5 +1,5 @@
 Repo: **`khaed1/imd-acc`** (code, tests, docs, IMD job prompts, and the project website). If it isn't in your session, attach it with `add_repo` (push access). Branches:
-- **`main`**: the code, docs and website; its `launch.json` is the mainnet manifest (the Stacker only). Pushing to `main` redeploys the website (GitHub Pages).
+- **`main`**: the code, docs and website; its `launch.json` is the next mainnet launch's manifest: the ProjectRegistry wired to the live mainnet Stacker (job 12). Pushing to `main` redeploys the website (GitHub Pages).
 - **`sepolia`**: `main` plus a Sepolia `launch.json` (the ProjectRegistry alone, wired to the live Stacker). Work on `main`, then merge `main` into `sepolia` so they differ only in `launch.json`.
 - **`launch-mainnet`** and **`launch-sepolia`**: `main` and `sepolia` with only `.github/workflows/` removed. **Never merge them into `main` or `sepolia`** (GitHub offers a "Compare & pull request" button after each push; ignore it): that deletes the website's deploy workflow, as PR #3 did on 2026-10-12 (history section 37). IMD launch requests pin commits here, because IMD's delivery token may not push workflow files (job 8 failed on that). To re-pin: merge the source branch in, keep the deletion, pin the new commit.
 

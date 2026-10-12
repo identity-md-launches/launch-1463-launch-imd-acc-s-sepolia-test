@@ -2,12 +2,17 @@
   "kind": "evm_contracts",
   "contracts": [
     {
-      "contract": "Stacker",
+      "contract": "ProjectRegistry",
       "constructorArgs": [
+        "0xa43e6F75ee006411F79Ac1C84120606C2330DE82",
         "0xD34a99Bc0f67aE1bbd63C660e6d0b0dd03E263B7",
-        "0x9Efa934D9fAd4AE28c998a40195646b965a97247"
+        "0x06909F672301F28A810f78cfe7a754851269F4F0",
+        "0x5598Aa9146215Bc13eb26f2c692Ad1461Fd32982",
+        "1",
+        "20000000000000000000",
+        "604800"
       ]
     }
   ],
-  "notes": "imd/acc on Ethereum mainnet: one contract, the Stacker, against the live IMD token and the live StakedIMD (sIMD) vault. Live since launch #1409 at 0x06909f672301f28a810f78cfe7a754851269f4f0; this is its code. No owner, admin, fee, pause or upgrade. credit(trader, imdAmount) refuses a zero trader (ZeroTrader) and the Stacker, the vault or the IMD token as trader (InvalidTrader), pulls IMD from the calling project and calls sIMD.deposit(imdAmount, trader), so the shares go straight to the trader, then emits Stacked(project, trader, imd, shares). The constructor only stores the two addresses and makes no external call, so the empty-chain rehearsal passes; the first non-zero credit checks sIMD.asset() == IMD and approves the vault once, and a failed credit rolls both back. TestIMD and TestSIMD under test/mocks are test doubles and are not deployed."
+  "notes": "imd/acc on Ethereum mainnet, second launch: one contract, the ProjectRegistry, the list of projects whose cashback earns points, decided by IdentityMD oracle panels through Intake v2 (0xa43e...de82), paid in IMD (0xd34a...63b7). It names the live mainnet Stacker 0x0690...f4f0 (launch #1409) in its questions and never calls it; the Stacker is not redeployed. Same code as Sepolia test run 5 (launch #1428): version 3 of the panel rules (docs/panel-rules-v2.md) and owner-only applications (a project that reports an owner() is applied for by that owner or itself; NotProjectOwner otherwise). Settings agreed by the owner: challenge bond 20 IMD, challenge cooldown 7 days (604800 s); panel 15 seats with 11 agreeing and a 1-day expiry are constants. Each ask pays the oracle fee read live from the Intake (ORACLE_FEE(), 0.5 IMD). Answers are accepted only from the Intake, for its own open request, signed by the oracle signer 0x5598...2982 for this contract, within mainnet's 200,000 callback gas. A listed project's beneficiary may hand its points to another wallet at most once per day and never while a question is open. Settling or clearing a question never waits on paying a bond: a refused transfer is recorded in bondOwed and claimed with claimBond(to). Questions are filed under chain 1. No owner; its constructor makes no external call. Test doubles under test/mocks and test/trial are not deployed."
 }

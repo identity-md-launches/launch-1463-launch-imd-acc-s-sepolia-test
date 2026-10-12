@@ -220,7 +220,7 @@ test/                     Foundry tests: unit, edge cases, fuzz, invariants, dep
   mocks/                  TestIMD, TestSIMD (a copy of StakedIMD), a mock Intake: test doubles only
   trial/                  SelfCredit: the registry trial's negative case (Sepolia only, never listed)
 lib/                      forge-std, OpenZeppelin and Solady files, vendored
-launch.json               the IMD launch manifest: one Stacker, mainnet IMD and sIMD
+launch.json               the next IMD launch's manifest: the mainnet ProjectRegistry (the Stacker is live)
 foundry.toml              solc 0.8.26, cancun, 10,000 optimizer runs, bytecode_hash none
 docs/
   listing.md              how a project gets listed: steps, checklist, fee guard, delisting
@@ -262,7 +262,7 @@ forge fmt --check src test
 
 The mainnet fork tests check the live vault's facts (asset, renounced owner, not paused), a credit to a new and a repeat trader, and the one-block hold followed by a redeem. The Sepolia ones check a credit, its event and totals, and that a paused vault makes `credit` revert without moving anything; the registry's fork test sends a real application to Intake v2 and settles it.
 
-**Branches:** `main` holds the mainnet manifest (the Stacker only). The `sepolia` branch differs only in `launch.json`: the same Stacker wired to the live Sepolia TestIMD and TestSIMD, plus the ProjectRegistry.
+**Branches:** `main`'s `launch.json` is the next mainnet launch's manifest: the ProjectRegistry, wired to the live mainnet Stacker (job 12). The `sepolia` branch differs only in `launch.json` (test run 5's registry, wired to the live Sepolia Stacker). `launch-mainnet` and `launch-sepolia` are those two without `.github/workflows`, for IMD's launches; never merge them back.
 
 **Working with IMD:** jobs are paid in IMD (0.5 IMD each) from the owner's wallet. Run the free `POST https://api.imd.fun/requests/check` before paying. Set hosting only with the job's `ipfs` field, never in the prompt text, or the agent tries to publish the site itself and blocks. Docs: https://imd.fun/docs.
 
