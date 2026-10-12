@@ -6,11 +6,12 @@
 (() => {
   'use strict';
 
-  // --- Constants & Addresses (Sepolia test run 4) ---
+  // --- Constants & Addresses (Sepolia test run 5) ---
   const ADDRESSES = {
     SEPOLIA_CHAIN_ID: '0xaa36a7', // 11155111
     STACKER: '0x0457276d7b036818b3eddc1a4a3fceda61e9314d', // test run 2, launch #1294
-    PROJECT_REGISTRY: '0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102', // test run 4, launch #1378
+    PROJECT_REGISTRY: '0x5f63cdead0f5f693b8964d82b56155f55645ccea', // test run 5, launch #1428
+    REGISTRY_RUN4: '0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102', // launch #1378, rules v2
     REGISTRY_RUN3: '0x9b466d1527322435dc7fdd97bc862b49c177fc2d', // launch #1371
     REGISTRY_RUN2: '0x3a3bfcb65614292b0ec7c62f9e3a5dac003b920e', // launch #1294, rules v1
     STACKER_V1: '0x293c7134ab8f6bf1d8ff44ed806575f8f1baf477', // launch #1129
@@ -25,7 +26,7 @@
   };
 
   // Blocks the live contracts were deployed at: reads start here.
-  const DEPLOY_BLOCK = { STACKER: 11891109, REGISTRY: 11897725 };
+  const DEPLOY_BLOCK = { STACKER: 11891109, REGISTRY: 11899694 };
 
   // Public Sepolia RPCs (all allow browser calls); tried in order.
   const RPC_URLS = [
@@ -50,6 +51,7 @@
     applyListing: '0x4f604d26', // applyListing(address,string,string,uint16,address)
     challengeForBeneficiary: '0x55b2aebb', // challengeForBeneficiary(address,string,address)
     applyQuestion: '0x7cb9ece7',
+    projectOwner: '0x0dd64ae4', // projectOwner(address), test run 5 on
     bondOwed: '0x8af92a6d',
     claimBond: '0x0f022812',
     expire: '0xc8db233e'
@@ -763,7 +765,7 @@
         <div class="dashboard-card" style="padding: 24px;">
           <div class="card-header-row" style="margin-bottom: 12px;">
             <h3 class="card-title" style="font-size: 1.05rem;">Live Sepolia Network Status</h3>
-            <span class="pill pill-live">Test Run 4 Live</span>
+            <span class="pill pill-live">Test Run 5 Live</span>
           </div>
           <p class="secondary" style="margin-bottom: 16px;">${blockText()} &middot; Stacker (launch #1294) and ProjectRegistry (launch #1378) live${live.status === 'ready' ? `: ${live.stacks.length} cashback credit${live.stacks.length === 1 ? '' : 's'} so far, ${[...live.projects.values()].filter(p => p.record && p.record.listed).length} listed project(s)` : ''}.</p>
           <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -808,7 +810,7 @@
     appRoot.innerHTML = `
       <div class="page-view">
         <div class="page-header-block">
-          <div class="page-tag"><span class="status-indicator"></span> Sepolia Test Run 4 &middot; ${blockText()}</div>
+          <div class="page-tag"><span class="status-indicator"></span> Sepolia Test Run 5 &middot; ${blockText()}</div>
           <h1 class="page-title">Your Stack & Testnet Console</h1>
           <p class="page-desc">Track accumulated cashback, sIMD vault shares, and use the Sepolia testnet tools.</p>
         </div>
@@ -982,7 +984,7 @@
     appRoot.innerHTML = `
       <div class="page-view">
         <div class="page-header-block">
-          <div class="page-tag">Test Run 4 Registry &middot; ${blockText()}</div>
+          <div class="page-tag">Test Run 5 Registry &middot; ${blockText()}</div>
           <h1 class="page-title">Participating Projects</h1>
           <p class="page-desc">Only credits from listed projects earn points. Every project selects its rate between 0.25% and 1.0%.</p>
         </div>
@@ -1009,7 +1011,7 @@
             <tbody>${rows}</tbody>
           </table>
         </div>
-        <p class="secondary" style="font-size: 0.84rem;">Projects come from the test run 4 ProjectRegistry (<span class="mono">${shortAddr(ADDRESSES.PROJECT_REGISTRY)}</span>) and from contracts that credit through the Stacker. Planned: PLEA on Ethereum mainnet, and PondPad on Robinhood Chain through the <a href="#/docs/multichain" style="color: var(--accent-primary);">multichain route</a>.</p>
+        <p class="secondary" style="font-size: 0.84rem;">Projects come from the test run 5 ProjectRegistry (<span class="mono">${shortAddr(ADDRESSES.PROJECT_REGISTRY)}</span>) and from contracts that credit through the Stacker. Planned: PLEA on Ethereum mainnet, and PondPad on Robinhood Chain through the <a href="#/docs/multichain" style="color: var(--accent-primary);">multichain route</a>.</p>
       </div>
     `;
 
@@ -1035,7 +1037,7 @@
             <h1 class="page-title">Project Not Found</h1>
           </div>
           <div class="dashboard-card">
-            <p class="secondary" style="overflow-wrap: anywhere;">Contract <span class="mono">${safe(rawAddr)}</span> has not applied to the test run 4 ProjectRegistry and has no Stacker credits.</p>
+            <p class="secondary" style="overflow-wrap: anywhere;">Contract <span class="mono">${safe(rawAddr)}</span> has not applied to the test run 5 ProjectRegistry and has no Stacker credits.</p>
             <div style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
               <a href="#/projects" class="btn btn-secondary btn-sm">&larr; Back to Projects</a>
               <a href="#/apply" class="btn btn-primary btn-sm">Apply for Listing</a>
@@ -1200,7 +1202,7 @@
     appRoot.innerHTML = `
       <div class="page-view">
         <div class="page-header-block">
-          <div class="page-tag">Test Run 4 Registry &middot; ${blockText()}</div>
+          <div class="page-tag">Test Run 5 Registry &middot; ${blockText()}</div>
           <h1 class="page-title">Apply for Project Listing</h1>
           <p class="page-desc">List your project on the ownerless ProjectRegistry so your traders' cashback credits earn points.</p>
         </div>
@@ -1273,7 +1275,7 @@
                 ${live.status !== 'ready' ? blockText() : live.outcomes.length ? live.outcomes.slice(0, 6).map(o => {
                   const p = live.projects.get(o.project);
                   return `&bull; <a href="#/projects/${o.project}">${safe(p?.name || shortAddr(o.project))}</a>: ${o.kind}${o.detail ? ` (${safe(o.detail)})` : ''}`;
-                }).join('<br>') : 'No outcomes yet on the test run 4 registry.'}
+                }).join('<br>') : 'No outcomes yet on the test run 5 registry.'}
               </p>
 
               ${w && w.bondOwed > 0n ? `
@@ -1368,6 +1370,14 @@
         if (rec.ask !== 0) throw new Error('This project already has an open question');
         await ensureSepolia();
         await loadWallet();
+        // A project that reports an owner() can only be applied for by that owner or itself.
+        let owner = null;
+        try {
+          owner = decAddress(words(await ethCall(ADDRESSES.PROJECT_REGISTRY, encodeCall(SEL.projectOwner, [['address', project]])))[0]).toLowerCase();
+        } catch {}
+        if (owner && owner !== '0x0000000000000000000000000000000000000000' && owner !== state.account && project.toLowerCase() !== state.account) {
+          throw new Error(`Only this project's owner can apply for it: connect ${owner}`);
+        }
         if (!live.wallet || live.wallet.feeToken < live.fee || live.wallet.feeAllowance < live.fee) throw new Error(applyStatus());
         note('');
         await sendTx(ADDRESSES.PROJECT_REGISTRY, encodeCall(SEL.applyListing, [
@@ -1438,7 +1448,7 @@
                       <td><strong>#${i + 1}</strong></td>
                       <td>${addrLink(t)}${t === state.account ? ' (You)' : ''}</td>
                       <td><strong class="mono" style="color: var(--accent-light);">${fmtUnits(v, 18, 2)}</strong></td>
-                    </tr>`).join('') : '<tr><td colspan="3" class="secondary">No points yet: only credits from projects listed on the test run 4 registry earn points.</td></tr>')}
+                    </tr>`).join('') : '<tr><td colspan="3" class="secondary">No points yet: only credits from projects listed on the test run 5 registry earn points.</td></tr>')}
                   ${mine !== null && !loading && !points.has(state.account) ? `
                     <tr style="background: var(--bg-elevated);">
                       <td>-</td>
@@ -1592,7 +1602,7 @@ error ZeroShares();`;
               <li><strong>sIMD vault</strong>: IMD's own ERC-4626 staking vault. imd/acc only deposits into it.</li>
             </ul>
             <h2 id="status">Where it stands</h2>
-            <p>The Stacker and the ProjectRegistry are live on Sepolia (latest: test run 4, launch #1378). The Stacker is live on Ethereum mainnet (launch #1409), against the real IMD and sIMD. See <a href="#/docs/contracts">Contracts</a> for every address and <a href="#/docs/roadmap">Roadmap</a> for what comes next.</p>
+            <p>The Stacker and the ProjectRegistry are live on Sepolia (latest: test run 5, launch #1428). The Stacker is live on Ethereum mainnet (launch #1409), against the real IMD and sIMD. See <a href="#/docs/contracts">Contracts</a> for every address and <a href="#/docs/roadmap">Roadmap</a> for what comes next.</p>
             <div class="docs-callout"><p>imd/acc is inspired by TokenWorks' btc/acc: the same idea of turning trading activity into a growing stack, here in staked IMD.</p></div>`
         },
         {
@@ -1808,7 +1818,7 @@ error ZeroShares();`;
             <h2 id="sepolia">Sepolia (chain 11155111)</h2>
             <div class="contracts-grid">
               ${docContract('Stacker', 'Live', 'pill-live', ADDRESSES.STACKER, 'The cashback funnel every project calls (launch #1294). The mainnet Stacker adds one check: it refuses the Stacker, the vault and the IMD token as the trader.', EXPLORER.sepolia)}
-              ${docContract('ProjectRegistry', 'Live', 'pill-live', ADDRESSES.PROJECT_REGISTRY, 'The current registry (test run 4, launch #1378): rules v2, one handoff per day, owed bonds.', EXPLORER.sepolia)}
+              ${docContract('ProjectRegistry', 'Live', 'pill-live', ADDRESSES.PROJECT_REGISTRY, 'The current registry (test run 5, launch #1428): rules v3, owner-only applications, one handoff per day, owed bonds.', EXPLORER.sepolia)}
               ${docContract('TestIMD', 'Sepolia', 'pill-live', ADDRESSES.TEST_IMD, 'Test IMD with a faucet: 10,000 tIMD per address every 24 hours.', EXPLORER.sepolia)}
               ${docContract('TestSIMD vault', 'Sepolia', 'pill-live', ADDRESSES.TEST_SIMD, 'A copy of StakedIMD whose owner can pause it, to test fallbacks.', EXPLORER.sepolia)}
               ${docContract('Oracle test IMD', 'Sepolia', 'pill-live', ADDRESSES.ORACLE_FEE_TOKEN, 'Pays the registry\'s oracle fee and bonds; anyone can mint it.', EXPLORER.sepolia)}
@@ -1823,6 +1833,7 @@ error ZeroShares();`;
             </div>
             <h2 id="earlier">Earlier Sepolia deployments</h2>
             ${docTable(['Contract', 'Address', 'Note'], [
+              ['ProjectRegistry, test run 4 (#1378)', docAddr(ADDRESSES.REGISTRY_RUN4), 'Rules v2; PLEA listed and defended in the live trial.'],
               ['ProjectRegistry, test run 3 (#1371)', docAddr(ADDRESSES.REGISTRY_RUN3), 'Rules v2, before owed bonds.'],
               ['ProjectRegistry, test run 2 (#1294)', docAddr(ADDRESSES.REGISTRY_RUN2), 'Rules v1.'],
               ['Stacker, first run (#1129)', docAddr(ADDRESSES.STACKER_V1), 'Also stored per-trader totals on chain.']
@@ -1894,7 +1905,7 @@ error ZeroShares();`;
             <p>Every chain's cashback and points, rebuilt from the chain about every 15 minutes and published with this site. No key and no server: any site or script can fetch them.</p>
             ${docTable(['File', 'What it holds'], [
               ['<a href="./data/v1/index.json"><code>/data/v1/index.json</code></a>', 'The chains that have a file, with each file\'s last block. Start here.'],
-              ['<a href="./data/v1/sepolia.json"><code>/data/v1/sepolia.json</code></a>', 'Sepolia: the test run 2 Stacker and the test run 4 registry.'],
+              ['<a href="./data/v1/sepolia.json"><code>/data/v1/sepolia.json</code></a>', 'Sepolia: the test run 2 Stacker and the test run 5 registry.'],
               ['<a href="./data/v1/ethereum.json"><code>/data/v1/ethereum.json</code></a>', 'Ethereum mainnet: the Stacker (launch #1409). No registry yet, so no points.']
             ])}
             <h2 id="rules">What the numbers mean</h2>
@@ -1993,7 +2004,7 @@ const points = me ? Number(BigInt(me.points) / 10n ** 14n) / 1e4 : 0;`, 'code-da
           keywords: 'roadmap next mainnet indexer dashboard registry multichain eth route',
           body: `
             <ol>
-              <li><strong>Sepolia test runs</strong> (done): the Stacker and the ProjectRegistry, now at test run 4 (launch #1378).</li>
+              <li><strong>Sepolia test runs</strong> (done): the Stacker and the ProjectRegistry, now at test run 5 (launch #1428).</li>
               <li><strong>Live listing trial</strong> on Sepolia (done, 2026-10-12): PLEA listed by the oracle panel, a negative case rejected, and a challenge against PLEA defended.</li>
               <li><strong>The Stacker on Ethereum mainnet</strong> (done, 2026-10-12, launch #1409), with a full IMD swarm audit. PLEA mainnet uses its address.</li>
               <li><strong>Indexer and mainnet dashboard</strong>: each trader's cashback, points and value, and the leaderboards.</li>

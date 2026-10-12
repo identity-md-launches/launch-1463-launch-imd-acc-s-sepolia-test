@@ -537,7 +537,8 @@ contract ProjectRegistry is OracleAttestationConsumer, ReentrancyGuard {
         return _definitions(project, rateBps, beneficiary, true);
     }
 
-    /// @dev Version 2 of the panel's rules (docs/panel-rules-v2.md), rehearsed on Sepolia. IMD
+    /// @dev Version 3 of the panel's rules (docs/panel-rules-v2.md): version 2, rehearsed on Sepolia, with
+    /// the trader and feeGuard rules from the mainnet Stacker launch's audit (launch #1409). IMD
     /// takes at most 512 characters per rule, and the rules go into the JSON body as they are, so
     /// none may contain a double quote or a backslash.
     function _definitions(address project, uint16 rateBps, address beneficiary, bool application)
