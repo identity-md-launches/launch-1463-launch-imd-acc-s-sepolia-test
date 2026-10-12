@@ -69,9 +69,9 @@ Two rules change, both from IMD's audit of the mainnet Stacker launch (#1409, [h
 
 All four no votes on the venue say the same thing: its `resolveTrader` accepts any contract the router's `msgSender()` reports and rejects only the router itself, so "a second forwarding router could be credited", which they read as breaking "reject … forwarding-router recipients". The venue follows IMD's own reference implementation, and so does PLEA's new hook; a hook cannot tell a smart-contract wallet from another router by its address, so the phrase has no meaning a hook could implement. Both panels reached exactly the quorum.
 
-## Version 3.1 (proposed: the `trader` rule made precise, 2026-10-12)
+## Version 3.1 (the `trader` rule made precise, 2026-10-12)
 
-Not looser: the same behaviour, with the undefined phrase replaced by what every compliant hook actually does. Only the middle sentence changes, and the last one is shortened to stay under 512 characters (505). The other seven rules are unchanged. To be rehearsed with a one-off oracle question on the venue (its live listing body with only this rule replaced) before it goes into `src/ProjectRegistry.sol`, then deployed once more on Sepolia (test run 6) before the mainnet registry.
+**In `src/ProjectRegistry.sol` on `main` since 2026-10-12, for Sepolia test run 6 and the mainnet registry.** Not looser: the same behaviour, with the undefined phrase replaced by what every compliant hook actually does. Only the middle sentence changes, and the last one is shortened to stay under 512 characters (505). The other seven rules are unchanged. **Rehearsed** with a one-off oracle question on the venue (its live listing body with only this rule replaced, sent straight to the Intake with no callback; [history 42](history.md#42-version-31-rehearsed-11-of-11-and-in-main-2026-10-12)): **11 true, 0 false, a signed yes**, where the same venue under version 3 had drawn 3 and then 1 no votes on this point.
 
 | Key | Rule |
 |---|---|
@@ -80,3 +80,9 @@ Not looser: the same behaviour, with the undefined phrase replaced by what every
 | Version 3 said | Panel members read it as | Version 3.1 |
 |---|---|---|
 | "Reject zero, Stacker, IMD, vault and forwarding-router recipients" | any contract `msgSender()` returns might be a router, so a hook that accepts one fails | "the router itself" is rejected; "the address msgSender() reports is a valid trader even when it is a contract" (README rule 3 already says smart-contract wallets stay valid when resolved through the router) |
+
+| Rules | Case (test run 5's registry, the TrialVenue) | Yes | No | Outcome |
+|---|---|---|---|---|
+| Version 3 | application | 11 | 3 | signed yes |
+| Version 3 | challenge | 11 | 1 | signed yes |
+| Version 3.1 | rehearsal (same question, this rule replaced) | 11 | 0 | **signed yes** |
