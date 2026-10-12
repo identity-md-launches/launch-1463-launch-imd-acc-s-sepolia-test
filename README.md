@@ -121,6 +121,14 @@ The registry `main` will use on mainnet: test run 4's plus version 3 of the pane
 |---|---|---|
 | ProjectRegistry | [`0x5f63cdead0f5f693b8964d82b56155f55645ccea`](https://sepolia.etherscan.io/address/0x5f63cdead0f5f693b8964d82b56155f55645ccea) | Stacker `0x0457…314d`, fee `ORACLE_FEE()` 0.5 test IMD of `0x44a1…f89a` (read live from Intake v2), challenge bond 5 test IMD, cooldown 1 hour, panel 15/11, 1-day expiry, one beneficiary handoff per day, owed bonds, owner-only applications (`projectOwner`, `NotProjectOwner`). |
 
+### Sepolia test run 6 (prepared, awaiting deployment)
+
+This branch's [`launch.json`](launch.json) deploys only `ProjectRegistry`, wired to test run 2's live Stacker `0x0457276d7b036818b3eddc1a4a3fceda61e9314d` and Intake v2 `0xa43e6f75ee006411f79ac1c84120606c2330de82`. It uses the Sepolia oracle-payment IMD `0x44a1cd38474fb1748400e7deb5f8d786cce3f89a`, signer `0x5598aa9146215bc13eb26f2c692ad1461fd32982`, question chain 1, a 5 test-IMD bond and a 3,600-second cooldown. The Stacker and its existing TestIMD/TestSIMD pair are reused.
+
+The registry carries [version 3.1 of the panel rules](docs/panel-rules-v2.md#version-31-the-trader-rule-made-precise-2026-10-12): the router itself is rejected as a recipient, while the address its `msgSender()` reports is a valid trader even when it is a contract. The only policy change from test run 5 is that rule's wording. The [run 6 factory rehearsal](test/RegistryLaunchRun6.t.sol) checks the exact manifest on an empty chain; [ADAPTATION.md](ADAPTATION.md) records the launch checks.
+
+The live address and transaction will come from the deployment handoff. Once confirmed, record the registry address here in a Deployments table labelled **Sepolia test run 6**; the local rehearsal address is not a live deployment.
+
 ### Ethereum mainnet (live, launch #1409, block 26,176,629)
 
 | Contract | Address | Notes |
@@ -221,14 +229,14 @@ test/                     Foundry tests: unit, edge cases, fuzz, invariants, dep
   mocks/                  TestIMD, TestSIMD (a copy of StakedIMD), a mock Intake: test doubles only
   trial/                  SelfCredit and TrialVenue: the registry trial's negative and positive cases (Sepolia only)
 lib/                      forge-std, OpenZeppelin and Solady files, vendored
-launch.json               the next IMD launch's manifest: the mainnet ProjectRegistry (the Stacker is live)
+launch.json               this branch's Sepolia test run 6 manifest: ProjectRegistry only (the Stacker is live)
 foundry.toml              solc 0.8.26, cancun, 10,000 optimizer runs, bytecode_hash none
 docs/
   listing.md              how a project gets listed: steps, checklist, fee guard, delisting
   design.md               design detail: building blocks, points, ProjectRegistry, v2 ETH route,
                           decisions, open questions, launch settings, btc/acc lessons
   history.md              what happened so far, with the checks and transactions behind it
-  panel-rules-v2.md       the oracle panel's rules: versions 2 and 3 (live on Sepolia) and the proposed 3.1
+  panel-rules-v2.md       the oracle panel's rules: versions 2 and 3 (live on Sepolia) and 3.1 for test run 6
   data-api.md             the data API: JSON snapshot files, their format and stability promise
   explainer.html          a one-page explainer for traders and projects
 jobs/                     IMD swarm job prompts, in order
@@ -255,15 +263,15 @@ With [Foundry](https://getfoundry.sh) 1.8.3, the version IMD's verifier runs:
 
 ```
 forge build
-forge test                                                        # 225 tests; the 11 fork tests skip
+forge test                                                        # 247 tests: 233 pass offline, 14 skip
 ETH_RPC_URL=https://ethereum-rpc.publicnode.com forge test --mc MainnetFork            # live IMD and sIMD
 SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com forge test --mc SepoliaFork # live TestIMD and TestSIMD; RegistrySepoliaFork: the real Intake v2
 forge fmt --check src test
 ```
 
-The mainnet fork tests check the live vault's facts (asset, renounced owner, not paused), a credit to a new and a repeat trader, and the one-block hold followed by a redeem. The Sepolia ones check a credit, its event and totals, and that a paused vault makes `credit` revert without moving anything; the registry's fork test sends a real application to Intake v2 and settles it.
+The mainnet fork tests check the live vault's facts (asset, renounced owner, not paused), a credit to a new and a repeat trader, and the one-block hold followed by a redeem. The Sepolia ones check a credit, its event and totals, and that a paused vault makes `credit` revert without moving anything; the registry's fork test sends a real application to Intake v2 and settles it. Without RPC URLs, 12 fork tests skip; two mainnet-manifest checks also skip on this Sepolia manifest. To run all 12 fork tests, set both `ETH_RPC_URL` and `SEPOLIA_RPC_URL` and run `forge test --match-path 'test/*Fork.t.sol'`. Fork transactions are local simulations.
 
-**Branches:** `main`'s `launch.json` is the next mainnet launch's manifest: the ProjectRegistry, wired to the live mainnet Stacker (job 12). The `sepolia` branch differs only in `launch.json` (test run 5's registry, wired to the live Sepolia Stacker). `launch-mainnet` and `launch-sepolia` are those two without `.github/workflows`, for IMD's launches; never merge them back.
+**Branches:** `main`'s `launch.json` is the next mainnet launch's manifest: the ProjectRegistry, wired to the live mainnet Stacker (job 12). The `sepolia` branch differs only in `launch.json` (test run 6's registry, wired to the live Sepolia Stacker). `launch-mainnet` and `launch-sepolia` are those two without `.github/workflows`, for IMD's launches; never merge them back. This launch handoff also includes the run 6 factory regression test and adaptation notes.
 
 **Working with IMD:** jobs are paid in IMD (0.5 IMD each) from the owner's wallet. Run the free `POST https://api.imd.fun/requests/check` before paying. Set hosting only with the job's `ipfs` field, never in the prompt text, or the agent tries to publish the site itself and blocks. Docs: https://imd.fun/docs.
 
