@@ -1,5 +1,6 @@
 // One step of the listing trial through the website, signed by the test wallet.
-// usage: TARGET=<rpc> node trial.mjs plea|selfcredit|challenge
+// usage: TARGET=<rpc> node trial.mjs plea|selfcredit|apply|challenge
+// apply: PROJECT, NAME, URL (RATE 50, BENEFICIARY the test wallet); challenge: PROJECT (default PLEA's hook).
 // TARGET=http://127.0.0.1:8545 rehearses on the local fork (the page's RPCs are routed there too);
 // live Sepolia needs LIVE_OK=1. The key comes from PONDPAD_TESTNET_KEY and is never printed.
 import { execFile } from "node:child_process";
@@ -20,8 +21,9 @@ const SC = "0x3d1778be5f9e55f0df35acaf64a13efe2fe81488";
 const PLEA_URL = "https://eth-sepolia.blockscout.com/address/0x2d5A03d5bAb98a4a435edad11813373963bcA8cC?tab=contract";
 const SC_URL = "https://repo.sourcify.dev/11155111/0x3D1778bE5f9E55f0dF35ACAF64A13Efe2FE81488";
 const REASON = "Trial challenge: please check that the hook still credits 50 bps of each trade from its own fees and that the fee guard still holds.";
-const MAX_TX = { plea: 2, selfcredit: 2, challenge: 3 }[STEP];
-if (!MAX_TX) throw new Error("step: plea | selfcredit | challenge");
+const MAX_TX = { plea: 2, selfcredit: 2, apply: 2, challenge: 3 }[STEP];
+if (!MAX_TX) throw new Error("step: plea | selfcredit | apply | challenge");
+const TARGET_PROJECT = (process.env.PROJECT || HOOK).toLowerCase();
 const CAST = `${process.env.HOME}/.foundry/bin/cast`;
 const RPC_HOSTS = /rpc\.sepolia\.ethpandaops\.io|ethereum-sepolia-rpc\.publicnode\.com|sepolia\.drpc\.org/;
 
@@ -84,15 +86,30 @@ await page.exposeFunction("__walletRpc", async (s) => {
   if (method === "eth_chainId") return JSON.stringify({ result: "0xaa36a7" });
   if (method === "wallet_switchEthereumChain" || method === "wallet_addEthereumChain") return JSON.stringify({ result: null });
   if (method === "eth_sendTransaction") return JSON.stringify(await sendTransaction(params[0]));
+  if (method === "eth_estimateGas") {
+    let r;
+    for (let i = 0; i < 4; i++) { // a node behind the head may not see the approval yet
+      r = await rpc(method, params);
+      if (!r.error) break;
+      await new Promise((f) => setTimeout(f, 3000));
+    }
+    return JSON.stringify(r);
+  }
   return JSON.stringify(await rpc(method, params));
 });
 await page.addInitScript(INIT);
 
-async function waitSent(n, label) {
-  for (let i = 0; i < 240 && sent.length < n; i++) await page.waitForTimeout(250);
-  if (sent.length < n) throw new Error(`${label}: not sent; page says: ${(await page.locator("#step-apply-disabled").textContent().catch(() => "")) || ""}`);
+async function waitSent(n, label, sel) {
+  const ready = () => (sel ? sent.some((t) => t.sel === sel) : sent.length >= n);
+  for (let i = 0; i < 240 && !ready(); i++) await page.waitForTimeout(250);
+  if (!ready()) {
+    const toast = (await page.locator("#toast-text").textContent().catch(() => "")) || "";
+    const form = (await page.locator("#step-apply-disabled").textContent().catch(() => "")) || "";
+    throw new Error(`${label}: not sent; page says: ${toast} ${form}`.trim());
+  }
+  const tx = sel ? sent.find((t) => t.sel === sel) : sent[n - 1];
   for (let i = 0; i < 120; i++) {
-    const r = (await rpc("eth_getTransactionReceipt", [sent[n - 1].hash])).result;
+    const r = (await rpc("eth_getTransactionReceipt", [tx.hash])).result;
     if (r) { console.log(`  ${label}: ${r.status === "0x1" ? "confirmed" : "REVERTED"} in block ${Number(r.blockNumber)}, gas used ${Number(r.gasUsed).toLocaleString("en-US")}`); await page.waitForTimeout(4000); return r; }
     await page.waitForTimeout(2000);
   }
@@ -115,16 +132,24 @@ async function apply(v) {
 console.log(`${STEP} on ${LIVE ? "LIVE Sepolia" : "the local fork"} through ${SITE}`);
 if (STEP === "plea") await apply({ project: HOOK, name: "PLEA", url: PLEA_URL, rate: "50", beneficiary: ACCOUNT });
 if (STEP === "selfcredit") await apply({ project: SC, name: "SelfCredit trial", url: SC_URL, rate: "50", beneficiary: ACCOUNT });
+if (STEP === "apply") await apply({ project: TARGET_PROJECT, name: process.env.NAME, url: process.env.URL, rate: process.env.RATE || "50", beneficiary: process.env.BENEFICIARY || ACCOUNT });
 if (STEP === "challenge") {
   await page.goto(SITE + "#/apply", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(5000);
   await page.click("#btn-wallet");
   await page.waitForTimeout(4000);
-  await page.click("#btn-get-feetoken"); await waitSent(1, "mint 10 oracle test IMD");
-  await page.goto(SITE + `#/projects/${HOOK}`); await page.waitForTimeout(5000);
+  // Fee token balance and allowance of the test wallet: mint and approve only when short (a rerun).
+  const FEE_TOKEN = "0x44a1cd38474fb1748400e7deb5f8d786cce3f89a", REGISTRY = "0x5f63cdead0f5f693b8964d82b56155f55645ccea";
+  const pad = (a) => a.slice(2).padStart(64, "0");
+  const balance = BigInt((await rpc("eth_call", [{ to: FEE_TOKEN, data: "0x70a08231" + pad(ACCOUNT) }, "latest"])).result);
+  const allowance = BigInt((await rpc("eth_call", [{ to: FEE_TOKEN, data: "0xdd62ed3e" + pad(ACCOUNT) + pad(REGISTRY) }, "latest"])).result);
+  const needed = 5_500_000_000_000_000_000n;
+  if (balance < needed) { await page.click("#btn-get-feetoken"); await waitSent(1, "mint 10 oracle test IMD", "0x40c10f19"); } else console.log("  fee token balance is enough, no mint");
+  await page.goto(SITE + `#/projects/${TARGET_PROJECT}`); await page.waitForTimeout(5000);
   await page.fill("#ch-reason", REASON);
   await page.click("#btn-submit-challenge");
-  await waitSent(2, "approve fee + bond"); await waitSent(3, "challengeForBeneficiary");
+  if (allowance < needed) await waitSent(0, "approve fee + bond", "0x095ea7b3"); else console.log("  allowance is enough, no approve");
+  await waitSent(0, "challengeForBeneficiary", "0x55b2aebb");
 }
 for (const t of sent) console.log(`TX ${t.sel} ${t.hash}`);
 console.log("page errors:", errors.length ? errors : "none");

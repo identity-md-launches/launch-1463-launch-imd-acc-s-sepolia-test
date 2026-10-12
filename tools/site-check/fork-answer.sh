@@ -4,8 +4,8 @@
 set -euo pipefail
 export PATH=$HOME/.foundry/bin:$PATH
 F=${ANVIL:-http://127.0.0.1:8545}
-# The test run 4 registry (launch #1378) by default; REG=0x… for another one.
-REG=${REG:-0xfe4470a42df0e77f7efb1b2e8135134a9cd7d102}
+# The test run 5 registry (launch #1428) by default; REG=0x… for another one.
+REG=${REG:-0x5f63cdead0f5f693b8964d82b56155f55645ccea}
 INTAKE=0xa43e6f75ee006411f79ac1c84120606c2330de82
 TESTKEY=0x00000000000000000000000000000000000000000000000000000000000a11ce
 SIGNER=$(cast wallet address --private-key $TESTKEY)
