@@ -1,5 +1,6 @@
 // One step of the listing trial through the website, signed by the test wallet.
-// usage: TARGET=<rpc> node trial.mjs plea|selfcredit|challenge
+// usage: TARGET=<rpc> node trial.mjs plea|selfcredit|apply|challenge
+// apply: PROJECT, NAME, URL (RATE 50, BENEFICIARY the test wallet); challenge: PROJECT (default PLEA's hook).
 // TARGET=http://127.0.0.1:8545 rehearses on the local fork (the page's RPCs are routed there too);
 // live Sepolia needs LIVE_OK=1. The key comes from PONDPAD_TESTNET_KEY and is never printed.
 import { execFile } from "node:child_process";
@@ -20,8 +21,9 @@ const SC = "0x3d1778be5f9e55f0df35acaf64a13efe2fe81488";
 const PLEA_URL = "https://eth-sepolia.blockscout.com/address/0x2d5A03d5bAb98a4a435edad11813373963bcA8cC?tab=contract";
 const SC_URL = "https://repo.sourcify.dev/11155111/0x3D1778bE5f9E55f0dF35ACAF64A13Efe2FE81488";
 const REASON = "Trial challenge: please check that the hook still credits 50 bps of each trade from its own fees and that the fee guard still holds.";
-const MAX_TX = { plea: 2, selfcredit: 2, challenge: 3 }[STEP];
-if (!MAX_TX) throw new Error("step: plea | selfcredit | challenge");
+const MAX_TX = { plea: 2, selfcredit: 2, apply: 2, challenge: 3 }[STEP];
+if (!MAX_TX) throw new Error("step: plea | selfcredit | apply | challenge");
+const TARGET_PROJECT = (process.env.PROJECT || HOOK).toLowerCase();
 const CAST = `${process.env.HOME}/.foundry/bin/cast`;
 const RPC_HOSTS = /rpc\.sepolia\.ethpandaops\.io|ethereum-sepolia-rpc\.publicnode\.com|sepolia\.drpc\.org/;
 
@@ -115,13 +117,14 @@ async function apply(v) {
 console.log(`${STEP} on ${LIVE ? "LIVE Sepolia" : "the local fork"} through ${SITE}`);
 if (STEP === "plea") await apply({ project: HOOK, name: "PLEA", url: PLEA_URL, rate: "50", beneficiary: ACCOUNT });
 if (STEP === "selfcredit") await apply({ project: SC, name: "SelfCredit trial", url: SC_URL, rate: "50", beneficiary: ACCOUNT });
+if (STEP === "apply") await apply({ project: TARGET_PROJECT, name: process.env.NAME, url: process.env.URL, rate: process.env.RATE || "50", beneficiary: process.env.BENEFICIARY || ACCOUNT });
 if (STEP === "challenge") {
   await page.goto(SITE + "#/apply", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(5000);
   await page.click("#btn-wallet");
   await page.waitForTimeout(4000);
   await page.click("#btn-get-feetoken"); await waitSent(1, "mint 10 oracle test IMD");
-  await page.goto(SITE + `#/projects/${HOOK}`); await page.waitForTimeout(5000);
+  await page.goto(SITE + `#/projects/${TARGET_PROJECT}`); await page.waitForTimeout(5000);
   await page.fill("#ch-reason", REASON);
   await page.click("#btn-submit-challenge");
   await waitSent(2, "approve fee + bond"); await waitSent(3, "challengeForBeneficiary");

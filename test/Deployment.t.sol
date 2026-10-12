@@ -28,6 +28,8 @@ contract DeploymentTest is Test {
     /// @dev Sepolia test run 2 (launch #1294): the live Stacker on the test pair, which PLEA's hook
     /// credits through. Test run 3 deploys only a registry wired to it.
     address internal constant SEPOLIA_STACKER = 0x0457276D7b036818B3EddC1A4A3FCeda61e9314d;
+    /// @dev The mainnet Stacker (launch #1409), which the mainnet registry names.
+    address internal constant MAINNET_STACKER = 0x06909F672301F28A810f78cfe7a754851269F4F0;
 
     /// @dev main: the Stacker alone, on mainnet. sepolia: either the Stacker on the test pair, then
     /// the ProjectRegistry wired to it (test run 2), or the ProjectRegistry alone, wired to test
@@ -43,6 +45,11 @@ contract DeploymentTest is Test {
                 == keccak256("ProjectRegistry")
         ) {
             assertFalse(vm.keyExistsJson(json, ".contracts[1]"), "the registry alone");
+            string[] memory a = vm.parseJsonStringArray(json, ".contracts[0].constructorArgs");
+            if (vm.parseAddress(a[1]) == MAINNET_IMD) {
+                _mainnetRegistryArgs(a);
+                return;
+            }
             string[] memory reg = _sepoliaRegistryArgs(json, ".contracts[0].constructorArgs");
             assertEq(vm.parseAddress(reg[2]), SEPOLIA_STACKER, "test run 2's live Stacker");
             return;
@@ -62,6 +69,19 @@ contract DeploymentTest is Test {
         assertEq(vm.parseJsonString(json, ".contracts[1].contract"), "ProjectRegistry");
         string[] memory r = _sepoliaRegistryArgs(json, ".contracts[1].constructorArgs");
         assertEq(r[2], "$contract:Stacker", "the Stacker of this launch");
+    }
+
+    /// @dev The mainnet registry: paid in IMD, naming the live mainnet Stacker, with the agreed
+    /// mainnet bond and cooldown.
+    function _mainnetRegistryArgs(string[] memory r) internal pure {
+        assertEq(r.length, 7);
+        assertEq(vm.parseAddress(r[0]), INTAKE_V2, "intake");
+        assertEq(vm.parseAddress(r[1]), MAINNET_IMD, "oracle asset: IMD");
+        assertEq(vm.parseAddress(r[2]), MAINNET_STACKER, "the live mainnet Stacker");
+        assertEq(vm.parseAddress(r[3]), ORACLE_SIGNER, "oracle signer");
+        assertEq(vm.parseUint(r[4]), 1, "questions filed under chain 1");
+        assertEq(vm.parseUint(r[5]), 20e18, "agreed mainnet bond: 20 IMD");
+        assertEq(vm.parseUint(r[6]), 7 days, "agreed mainnet cooldown: 7 days");
     }
 
     /// @dev Checks a Sepolia registry's arguments except the Stacker (index 2), left to the caller.
